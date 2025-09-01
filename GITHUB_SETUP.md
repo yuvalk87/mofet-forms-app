@@ -19,25 +19,25 @@
 
 ### אם יצרת repository ריק (מומלץ):
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/mofet-forms-app.git
+git remote add origin https://github.com/yuvalk87/mofet-forms-app.git
 git branch -M main
 git push -u origin main
 ```
 
 ### אם יצרת repository עם קבצים:
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/mofet-forms-app.git
+git remote add origin https://github.com/yuvalk87/mofet-forms-app.git
 git pull origin main --allow-unrelated-histories
 git push -u origin main
 ```
 
-## שלב 3: החלפת YOUR_USERNAME
+## שלב 3: הפקודות המדויקות עבור החשבון שלך
 
-החלף את `YOUR_USERNAME` בפקודות לעיל עם שם המשתמש שלך ב-GitHub.
-
-לדוגמה, אם שם המשתמש שלך הוא `johndoe`, הפקודה תהיה:
+הפקודות המדויקות עבור החשבון שלך (yuvalk87):
 ```bash
-git remote add origin https://github.com/johndoe/mofet-forms-app.git
+git remote add origin https://github.com/yuvalk87/mofet-forms-app.git
+git branch -M main
+git push -u origin main
 ```
 
 ## שלב 4: אימות (אם נדרש)

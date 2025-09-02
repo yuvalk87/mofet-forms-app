@@ -22,7 +22,8 @@ class User(db.Model):
     
     # Relationships
     initiated_forms = db.relationship('Form', foreign_keys='Form.initiator_id', backref='initiator', lazy='dynamic')
-    approvals = db.relationship('FormApproval', backref='approver', lazy='dynamic')
+    approvals = db.relationship('FormApproval', foreign_keys='FormApproval.approver_id', backref='approver', lazy='dynamic')
+    added_approvals = db.relationship('FormApproval', foreign_keys='FormApproval.added_by', backref='adder', lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -185,4 +186,6 @@ class OTPCode(db.Model):
             'expires_at': self.expires_at.isoformat() if self.expires_at else None,
             'used': self.used
         }
+
+
 

@@ -67,23 +67,40 @@ Develop a comprehensive form management application named "טפסי מופ"ת" (
 
 ### Phase 3: תכנון ופיתוח האפליקציה
 - [x] Set up the project environment (backend and frontend).
-- [x] Set up Git repository and GitHub connection instructions.
+- [x] Set up Git repository and push to GitHub.
 - [x] Create comprehensive database models for users, forms, and approval workflows.
 - [x] Implement authentication routes with 2FA support.
 - [x] Implement forms management routes with approval workflow.
 - [x] Complete user management routes and admin functionality.
 - [x] Complete backend API with all routes and CORS support.
 - [x] Add sample data initialization for testing.
-- [ ] Implement the dynamic form builder for Software and Tag forms.
-- [ ] Develop the frontend user interface (admin and regular user views).
-- [ ] Integrate the frontend with the backend API.
-- [ ] Implement the statistics dashboard.
-- [ ] Apply the ICL Group website design principles and ensure responsiveness.
-- [ ] Populate initial data for testing.
+- [x] Implement the dynamic form builder for Software and Tag forms.
+  
+- [x] Develop the frontend user interface (admin and regular user views).
+  - [x] Implement Login page.
+  - [x] Implement Dashboard for regular users.
+  - [x] Implement FormList and FormDetails pages.
+  - [x] Implement Admin Dashboard.
+  - [x] Implement User Management page.
+  - [x] Implement Role Management page.
+  - [x] Implement Form Builder page.
+  - [x] Set up main routing and navigation.
+- [x] Integrate the frontend with the backend API.
+- [x] Implement the statistics dashboard.
+- [x] Apply the ICL Group website design principles and ensure responsiveness.
+  - [x] Reviewed ICL Group website for design inspiration (colors, typography, layout).
+  - [x] Applied Tailwind CSS classes to match the design.
+  - [x] Ensured responsiveness across different screen sizes.
+- [x] Populate initial data for testing.
 
 ### Phase 4: בדיקה ופריסה של האפליקציה
-- [ ] Conduct thorough testing of all features (forms, approvals, permissions, dashboard).
-- [ ] Deploy the application to a public URL.
+- [ ] Conduct thorough testing of all features (forms, approvals, permissions, dashboard). (In Progress)
+  - [ ] Test user login and 2FA.
+  - [ ] Test form creation and submission for all types.
+  - [ ] Test approval workflow (approve, reject, add approver).
+  - [ ] Test admin functionalities (user management, role management, form builder).
+  - [ ] Test dashboard statistics.
+- [x] Deploy the application to a public URL.
 
 ### Phase 5: מסירת התוצאות למשתמש
 - [ ] Provide the public URL of the deployed application.

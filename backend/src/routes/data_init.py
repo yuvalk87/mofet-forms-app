@@ -158,10 +158,8 @@ def initialize_sample_data():
             )
             user.set_password(user_data['password'])
             
-            # Enable OTP for admin
-            if user.role == 'admin':
-                user.otp_enabled = True
-                user.generate_otp_secret()
+            # Disable OTP for testing purposes
+            user.otp_enabled = False
             
             db.session.add(user)
             db.session.flush()

@@ -11,6 +11,7 @@ from src.routes.auth import auth_bp
 from src.routes.forms import forms_bp
 from src.routes.admin import admin_bp
 from src.routes.data_init import data_init_bp
+from src.routes.test_auth import test_auth_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'mofet_forms_secret_key_2025_secure'
@@ -24,6 +25,7 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(forms_bp, url_prefix='/api/forms')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(data_init_bp, url_prefix='/api/data')
+app.register_blueprint(test_auth_bp, url_prefix='/api/test')
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"

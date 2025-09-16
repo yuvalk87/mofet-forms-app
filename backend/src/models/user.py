@@ -154,8 +154,8 @@ class UserRole(db.Model):
     assigned_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     
     # Relationships
-    user = db.relationship('User', foreign_keys=[user_id], backref='user_roles')
-    role = db.relationship('Role', backref='user_assignments')
+    user = db.relationship("User", foreign_keys=[user_id], backref=db.backref("user_roles", lazy="dynamic"), primaryjoin="UserRole.user_id == User.id")
+    role = db.relationship("Role", backref=db.backref("user_assignments", lazy="dynamic"), primaryjoin="UserRole.role_id == Role.id")
     
     def to_dict(self):
         return {

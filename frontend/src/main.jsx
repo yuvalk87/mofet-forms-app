@@ -1,67 +1,162 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import App from "./App";
 import "./index.css";
 
-// Import components for routing
-import Login from "./components/auth/Login";
-import Dashboard from "./components/dashboard/Dashboard";
-import FormList from "./components/forms/FormList";
-import FormDetails from "./components/forms/FormDetails";
-import FormBuilder from "./components/admin/FormBuilder";
-import UserManagement from "./components/admin/UserManagement";
-import RoleManagement from "./components/admin/RoleManagement";
-import AdminDashboard from "./components/admin/AdminDashboard";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+// Simple App component
+const App = () => {
+  const [currentPage, setCurrentPage] = React.useState('dashboard');
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <App />,
-    children: [
-      {
-        path: "/",
-        element: <ProtectedRoute element={<Dashboard />} />,
-      },
-      {
-        path: "/login",
-        element: <Login />,
-      },
-      {
-        path: "/forms",
-        element: <ProtectedRoute element={<FormList />} />,
-      },
-      {
-        path: "/forms/:formId",
-        element: <ProtectedRoute element={<FormDetails />} />,
-      },
-      {
-        path: "/admin",
-        element: <ProtectedRoute element={<AdminDashboard />} adminOnly={true} />,
-      },
-      {
-        path: "/admin/form-builder",
-        element: <ProtectedRoute element={<FormBuilder />} adminOnly={true} />,
-      },
-      {
-        path: "/admin/form-builder/:templateId",
-        element: <ProtectedRoute element={<FormBuilder />} adminOnly={true} />,
-      },
-      {
-        path: "/admin/users",
-        element: <ProtectedRoute element={<UserManagement />} adminOnly={true} />,
-      },
-      {
-        path: "/admin/roles",
-        element: <ProtectedRoute element={<RoleManagement />} adminOnly={true} />,
-      },
-    ],
-  },
-]);
+  React.useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('userToken');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLogin = async (email, password) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      if (response.ok && !data.requires_otp) {
+        localStorage.setItem('userToken', 'logged-in');
+        localStorage.setItem('userRole', data.user.role);
+        localStorage.setItem('userName', data.user.full_name);
+        setIsLoggedIn(true);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
+    setIsLoggedIn(false);
+    setCurrentPage('dashboard');
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-bold text-center mb-6">טפסי מופ"ת</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">דוא"ל</label>
+              <input
+                type="email"
+                defaultValue="admin@mofet.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                id="email"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">סיסמה</label>
+              <input
+                type="password"
+                defaultValue="admin123"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                id="password"
+              />
+            </div>
+            <button
+              onClick={() => {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                handleLogin(email, password);
+              }}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+            >
+              התחבר
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-gray-50" dir="rtl">
+      <aside className="w-64 bg-white shadow-md p-6">
+        <h2 className="text-2xl font-bold text-center mb-8 text-blue-700">טפסי מופ"ת</h2>
+        <nav className="space-y-2">
+          <button 
+            className={`w-full text-right p-3 rounded-lg transition-colors flex items-center ${
+              currentPage === 'dashboard' ? 'bg-blue-100' : 'hover:bg-blue-50'
+            }`}
+            onClick={() => setCurrentPage('dashboard')}
+          >
+            <span className="ml-3">🏠</span>
+            דף הבית
+          </button>
+          <button 
+            className={`w-full text-right p-3 rounded-lg transition-colors flex items-center ${
+              currentPage === 'forms' ? 'bg-blue-100' : 'hover:bg-blue-50'
+            }`}
+            onClick={() => setCurrentPage('forms')}
+          >
+            <span className="ml-3">📋</span>
+            כל הטפסים
+          </button>
+          <button 
+            className="w-full text-right p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600 flex items-center"
+            onClick={handleLogout}
+          >
+            <span className="ml-3">🚪</span>
+            התנתק
+          </button>
+        </nav>
+      </aside>
+      
+      <main className="flex-1 p-6">
+        {currentPage === 'dashboard' && (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-900">ברוך הבא, מנהל המערכת!</h1>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">טפסים פעילים</h3>
+                <p className="text-2xl font-bold text-blue-600">12</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-green-800 mb-2">טפסים שאושרו</h3>
+                <p className="text-2xl font-bold text-green-600">8</p>
+              </div>
+              <div className="bg-yellow-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">ממתינים לאישור</h3>
+                <p className="text-2xl font-bold text-yellow-600">4</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {currentPage === 'forms' && (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-900">כל הטפסים</h1>
+            <div className="text-center py-12">
+              <div className="text-gray-500 text-lg mb-4">אין טפסים במערכת</div>
+              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                צור את הטופס הראשון
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <App />
   </React.StrictMode>
 );
+

@@ -12,12 +12,18 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0',
+    strictPort: false,
     proxy: {
       "/api": {
-        target: "http://localhost:5000", // Flask backend URL
+        target: "https://5000-ilobg2od14yakb95u0dob-26f1bf08.manusvm.computer",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        secure: false,
       },
     },
   },
+  build: {
+    outDir: '../backend/src/static',
+    emptyOutDir: true,
+  }
 })

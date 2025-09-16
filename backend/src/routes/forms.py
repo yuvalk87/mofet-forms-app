@@ -124,7 +124,7 @@ def create_form():
         # Create approval records based on template's approval chain
         for step, role_id in enumerate(template.approval_chain):
             # Find users with this role
-            users_with_role = db.session.query(User).join(UserRole).filter(
+            users_with_role = db.session.query(User).join(UserRole, User.id == UserRole.user_id).filter(
                 UserRole.role_id == role_id,
                 User.is_active == True
             ).all()

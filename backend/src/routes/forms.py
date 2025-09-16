@@ -106,9 +106,30 @@ def create_form():
     try:
         data = request.get_json()
         template_id = data.get('template_id')
+        template_type = data.get('template_type')
         form_data = data.get('form_data')
         
-        template = FormTemplate.query.get_or_404(template_id)
+        # If template_type is provided instead of template_id, find the template
+        if template_type and not template_id:
+            template = FormTemplate.query.filter_by(form_type=template_type, is_active=True).first()
+            if not template:
+                # Create a basic template if it doesn't exist
+                template = FormTemplate(
+                    name=template_type,
+                    name_hebrew=template_type,
+                    description=f"Template for {template_type} forms",
+                    form_type=template_type,
+                    fields_config={},
+                    approval_chain=[1],  # Default to admin role
+                    created_by=session['user_id']
+                )
+                db.session.add(template)
+                db.session.flush()
+            template_id = template.id
+        elif template_id:
+            template = FormTemplate.query.get_or_404(template_id)
+        else:
+            return jsonify({'error': 'Either template_id or template_type must be provided'}), 400
         
         form = Form(
             template_id=template_id,
@@ -122,23 +143,24 @@ def create_form():
         db.session.flush()  # Get the form ID
         
         # Create approval records based on template's approval chain
-        for step, role_id in enumerate(template.approval_chain):
-            # Find users with this role
-            users_with_role = db.session.query(User).join(UserRole, User.id == UserRole.user_id).filter(
-                UserRole.role_id == role_id,
-                User.is_active == True
-            ).all()
-            
-            # For now, assign to the first user with this role
-            # In a real system, you might have more complex logic
-            if users_with_role:
-                approval = FormApproval(
-                    form_id=form.id,
-                    approver_id=users_with_role[0].id,
-                    step_number=step,
-                    action='pending'
-                )
-                db.session.add(approval)
+        if template.approval_chain:
+            for step, role_id in enumerate(template.approval_chain):
+                # Find users with this role
+                users_with_role = db.session.query(User).join(UserRole, User.id == UserRole.user_id).filter(
+                    UserRole.role_id == role_id,
+                    User.is_active == True
+                ).all()
+                
+                # For now, assign to the first user with this role
+                # In a real system, you might have more complex logic
+                if users_with_role:
+                    approval = FormApproval(
+                        form_id=form.id,
+                        approver_id=users_with_role[0].id,
+                        step_number=step,
+                        action='pending'
+                    )
+                    db.session.add(approval)
         
         db.session.commit()
         

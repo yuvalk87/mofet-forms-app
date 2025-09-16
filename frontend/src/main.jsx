@@ -2,10 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 
+// Import CreateFormFixed component
+const CreateFormFixed = React.lazy(() => import('./components/forms/CreateFormFixed'));
+
 // Simple App component
 const App = () => {
   const [currentPage, setCurrentPage] = React.useState('dashboard');
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  const [showCreateForm, setShowCreateForm] = React.useState(false);
 
   React.useEffect(() => {
     // Check if user is logged in
@@ -42,6 +46,18 @@ const App = () => {
     localStorage.removeItem('userName');
     setIsLoggedIn(false);
     setCurrentPage('dashboard');
+    setShowCreateForm(false);
+  };
+
+  const handleCreateFormClick = () => {
+    setShowCreateForm(true);
+    setCurrentPage('create-form');
+  };
+
+  const handleFormCreated = (form) => {
+    setShowCreateForm(false);
+    setCurrentPage('forms');
+    // Refresh forms list if needed
   };
 
   if (!isLoggedIn) {
@@ -93,7 +109,10 @@ const App = () => {
             className={`w-full text-right p-3 rounded-lg transition-colors flex items-center ${
               currentPage === 'dashboard' ? 'bg-blue-100' : 'hover:bg-blue-50'
             }`}
-            onClick={() => setCurrentPage('dashboard')}
+            onClick={() => {
+              setCurrentPage('dashboard');
+              setShowCreateForm(false);
+            }}
           >
             <span className="ml-3">🏠</span>
             דף הבית
@@ -102,10 +121,22 @@ const App = () => {
             className={`w-full text-right p-3 rounded-lg transition-colors flex items-center ${
               currentPage === 'forms' ? 'bg-blue-100' : 'hover:bg-blue-50'
             }`}
-            onClick={() => setCurrentPage('forms')}
+            onClick={() => {
+              setCurrentPage('forms');
+              setShowCreateForm(false);
+            }}
           >
             <span className="ml-3">📋</span>
             כל הטפסים
+          </button>
+          <button 
+            className={`w-full text-right p-3 rounded-lg transition-colors flex items-center ${
+              currentPage === 'create-form' ? 'bg-blue-100' : 'hover:bg-blue-50'
+            }`}
+            onClick={handleCreateFormClick}
+          >
+            <span className="ml-3">➕</span>
+            צור טופס חדש
           </button>
           <button 
             className="w-full text-right p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600 flex items-center"
@@ -135,19 +166,53 @@ const App = () => {
                 <p className="text-2xl font-bold text-yellow-600">4</p>
               </div>
             </div>
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">פעולות מהירות</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button 
+                  onClick={handleCreateFormClick}
+                  className="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  צור טופס חדש
+                </button>
+                <button className="bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                  נהל משתמשים
+                </button>
+                <button className="bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                  הגדרות מערכת
+                </button>
+              </div>
+            </div>
           </div>
         )}
         
         {currentPage === 'forms' && (
           <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">כל הטפסים</h1>
+            <div className="flex justify-between items-center">
+              <h1 className="text-3xl font-bold text-gray-900">כל הטפסים</h1>
+              <button 
+                onClick={handleCreateFormClick}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                צור טופס חדש
+              </button>
+            </div>
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">אין טפסים במערכת</div>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={handleCreateFormClick}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 צור את הטופס הראשון
               </button>
             </div>
           </div>
+        )}
+
+        {currentPage === 'create-form' && showCreateForm && (
+          <React.Suspense fallback={<div>טוען...</div>}>
+            <CreateFormFixed onFormCreated={handleFormCreated} />
+          </React.Suspense>
         )}
       </main>
     </div>

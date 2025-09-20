@@ -20,7 +20,12 @@ class User(db.Model):
     otp_enabled = db.Column(db.Boolean, default=False)
     
     # Relationships
-    initiated_forms = db.relationship('Form', foreign_keys='Form.initiator_id', backref='initiator', lazy='dynamic')
+    initiated_forms = db.relationship(
+        'Form',
+        foreign_keys='Form.initiator_id',
+        backref='initiator',
+        lazy='dynamic'
+    )
     approvals = db.relationship(
         'FormApproval',
         foreign_keys='FormApproval.approver_id',
@@ -60,7 +65,6 @@ class User(db.Model):
             'otp_enabled': self.otp_enabled
         }
 
-
 class FormTemplate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -88,7 +92,6 @@ class FormTemplate(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
-
 class Form(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     template_id = db.Column(db.Integer, db.ForeignKey('form_template.id'), nullable=False)
@@ -99,7 +102,13 @@ class Form(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime, nullable=True)
     
-    approvals = db.relationship('FormApproval', backref='form', lazy='dynamic', cascade='all, delete-orphan')
+    approvals = db.relationship(
+        'FormApproval',
+        foreign_keys='FormApproval.form_id',
+        backref='form',
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
 
     def to_dict(self):
         return {
@@ -114,7 +123,6 @@ class Form(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None
         }
-
 
 class FormApproval(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -140,7 +148,6 @@ class FormApproval(db.Model):
             'is_additional': self.is_additional
         }
 
-
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
@@ -156,7 +163,6 @@ class Role(db.Model):
             'description': self.description,
             'permissions': self.permissions
         }
-
 
 class UserRole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -176,7 +182,6 @@ class UserRole(db.Model):
             'role_name': self.role.name_hebrew if self.role else None,
             'assigned_at': self.assigned_at.isoformat() if self.assigned_at else None
         }
-
 
 class OTPCode(db.Model):
     id = db.Column(db.Integer, primary_key=True)

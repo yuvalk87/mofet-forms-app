@@ -5,6 +5,9 @@ import secrets
 
 db = SQLAlchemy()
 
+# ==========================
+# משתמשים
+# ==========================
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -19,23 +22,24 @@ class User(db.Model):
     otp_secret = db.Column(db.String(32), nullable=True)
     otp_enabled = db.Column(db.Boolean, default=False)
     
-    # Relationships
-    initiated_forms = db.relationship(
-        'Form',
-        foreign_keys='Form.initiator_id',
-        backref='initiator',
-        lazy='dynamic'
-    )
-    approvals = db.relationship(
+    # קשרים ל־FormApproval
+    approvals_as_approver = db.relationship(
         'FormApproval',
         foreign_keys='FormApproval.approver_id',
         backref='approver',
         lazy='dynamic'
     )
-    added_approvals = db.relationship(
+    approvals_as_added_by = db.relationship(
         'FormApproval',
         foreign_keys='FormApproval.added_by',
         backref='added_by_user',
+        lazy='dynamic'
+    )
+    
+    initiated_forms = db.relationship(
+        'Form',
+        foreign_keys='Form.initiator_id',
+        backref='initiator',
         lazy='dynamic'
     )
 
@@ -49,22 +53,9 @@ class User(db.Model):
         self.otp_secret = secrets.token_hex(16)
         return self.otp_secret
 
-    def __repr__(self):
-        return f'<User {self.email}>'
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'email': self.email,
-            'full_name': self.full_name,
-            'phone': self.phone,
-            'role': self.role,
-            'is_active': self.is_active,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'last_login': self.last_login.isoformat() if self.last_login else None,
-            'otp_enabled': self.otp_enabled
-        }
-
+# ==========================
+# תבניות טפסים
+# ==========================
 class FormTemplate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -79,19 +70,9 @@ class FormTemplate(db.Model):
     
     forms = db.relationship('Form', backref='template', lazy='dynamic')
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'name_hebrew': self.name_hebrew,
-            'description': self.description,
-            'form_type': self.form_type,
-            'fields_config': self.fields_config,
-            'approval_chain': self.approval_chain,
-            'is_active': self.is_active,
-            'created_at': self.created_at.isoformat() if self.created_at else None
-        }
-
+# ==========================
+# טפסים
+# ==========================
 class Form(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     template_id = db.Column(db.Integer, db.ForeignKey('form_template.id'), nullable=False)
@@ -110,59 +91,29 @@ class Form(db.Model):
         cascade='all, delete-orphan'
     )
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'template_id': self.template_id,
-            'template_name': self.template.name_hebrew if self.template else None,
-            'initiator_id': self.initiator_id,
-            'initiator_name': self.initiator.full_name if self.initiator else None,
-            'form_data': self.form_data,
-            'status': self.status,
-            'current_step': self.current_step,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'completed_at': self.completed_at.isoformat() if self.completed_at else None
-        }
-
+# ==========================
+# אישורים על טפסים
+# ==========================
 class FormApproval(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     form_id = db.Column(db.Integer, db.ForeignKey('form.id'), nullable=False)
     approver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    added_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     step_number = db.Column(db.Integer, nullable=False)
     action = db.Column(db.String(20), nullable=True)
     comments = db.Column(db.Text, nullable=True)
     action_date = db.Column(db.DateTime, nullable=True)
     is_additional = db.Column(db.Boolean, default=False)
-    added_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'form_id': self.form_id,
-            'approver_id': self.approver_id,
-            'approver_name': self.approver.full_name if self.approver else None,
-            'step_number': self.step_number,
-            'action': self.action,
-            'comments': self.comments,
-            'action_date': self.action_date.isoformat() if self.action_date else None,
-            'is_additional': self.is_additional
-        }
 
+# ==========================
+# תפקידים
+# ==========================
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
     name_hebrew = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=True)
     permissions = db.Column(db.JSON, nullable=False)
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'name_hebrew': self.name_hebrew,
-            'description': self.description,
-            'permissions': self.permissions
-        }
 
 class UserRole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -173,16 +124,10 @@ class UserRole(db.Model):
     
     user = db.relationship('User', foreign_keys=[user_id], backref='user_roles')
     role = db.relationship('Role', backref='user_assignments')
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'role_id': self.role_id,
-            'role_name': self.role.name_hebrew if self.role else None,
-            'assigned_at': self.assigned_at.isoformat() if self.assigned_at else None
-        }
 
+# ==========================
+# קודי OTP
+# ==========================
 class OTPCode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -192,13 +137,3 @@ class OTPCode(db.Model):
     used = db.Column(db.Boolean, default=False)
     
     user = db.relationship('User', backref='otp_codes')
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'code': self.code,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
-            'used': self.used
-        }

@@ -345,3 +345,207 @@ def export_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Mock data for dynamic lists (in production, this would be stored in database)
+DYNAMIC_LISTS = [
+    {
+        'id': 1,
+        'name': 'תוכנות',
+        'description': 'רשימת תוכנות הקיימות במערכת',
+        'items': ['Microsoft Office', 'AutoCAD', 'SAP', 'Oracle', 'Salesforce', 'Adobe Creative Suite']
+    },
+    {
+        'id': 2,
+        'name': 'מתקנים',
+        'description': 'רשימת מתקנים במפעל',
+        'items': ['מתקן A', 'מתקן B', 'מתקן C', 'מתקן ייצור 1', 'מתקן ייצור 2']
+    },
+    {
+        'id': 3,
+        'name': 'מפעלים',
+        'description': 'רשימת מפעלי החברה',
+        'items': ['מפעל הצפון', 'מפעל הדרום', 'מפעל המרכז', 'מפעל ים המלח']
+    }
+]
+
+# Mock data for approval chains
+APPROVAL_CHAINS = [
+    {
+        'id': 1,
+        'form_type': 'SMS',
+        'name': 'שרשרת אישור SMS',
+        'steps': [
+            {'step': 1, 'role': 'supervisor', 'name': 'מפקח ישיר'},
+            {'step': 2, 'role': 'manager', 'name': 'מנהל מחלקה'},
+            {'step': 3, 'role': 'admin', 'name': 'מנהל מערכת'}
+        ]
+    },
+    {
+        'id': 2,
+        'form_type': 'Software',
+        'name': 'שרשרת אישור תוכנה',
+        'steps': [
+            {'step': 1, 'role': 'supervisor', 'name': 'מפקח IT'},
+            {'step': 2, 'role': 'manager', 'name': 'מנהל IT'},
+            {'step': 3, 'role': 'admin', 'name': 'מנהל מערכת'}
+        ]
+    }
+]
+
+@admin_bp.route('/dynamic-lists', methods=['GET'])
+@require_admin
+def get_dynamic_lists():
+    """Get all dynamic lists - admin only"""
+    try:
+        return jsonify({
+            'lists': DYNAMIC_LISTS,
+            'total': len(DYNAMIC_LISTS)
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/dynamic-lists', methods=['POST'])
+@require_admin
+def create_dynamic_list():
+    """Create a new dynamic list - admin only"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Validate required fields
+        required_fields = ['name', 'items']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Create new list
+        new_list = {
+            'id': max([lst['id'] for lst in DYNAMIC_LISTS], default=0) + 1,
+            'name': data['name'],
+            'description': data.get('description', ''),
+            'items': data['items']
+        }
+        
+        DYNAMIC_LISTS.append(new_list)
+        
+        return jsonify({
+            'message': 'Dynamic list created successfully',
+            'list': new_list
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/dynamic-lists/<int:list_id>', methods=['PUT'])
+@require_admin
+def update_dynamic_list(list_id):
+    """Update a dynamic list - admin only"""
+    try:
+        # Find the list
+        list_to_update = None
+        for lst in DYNAMIC_LISTS:
+            if lst['id'] == list_id:
+                list_to_update = lst
+                break
+        
+        if not list_to_update:
+            return jsonify({'error': 'List not found'}), 404
+        
+        data = request.json
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Update list fields
+        if 'name' in data:
+            list_to_update['name'] = data['name']
+        if 'description' in data:
+            list_to_update['description'] = data['description']
+        if 'items' in data:
+            list_to_update['items'] = data['items']
+        
+        return jsonify({
+            'message': 'Dynamic list updated successfully',
+            'list': list_to_update
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/dynamic-lists/<int:list_id>', methods=['DELETE'])
+@require_admin
+def delete_dynamic_list(list_id):
+    """Delete a dynamic list - admin only"""
+    try:
+        # Find and remove the list
+        for i, lst in enumerate(DYNAMIC_LISTS):
+            if lst['id'] == list_id:
+                DYNAMIC_LISTS.pop(i)
+                return jsonify({'message': 'Dynamic list deleted successfully'}), 200
+        
+        return jsonify({'error': 'List not found'}), 404
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/approval-chains', methods=['GET'])
+@require_admin
+def get_approval_chains():
+    """Get all approval chains - admin only"""
+    try:
+        return jsonify({
+            'chains': APPROVAL_CHAINS,
+            'total': len(APPROVAL_CHAINS)
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/approval-chains', methods=['POST'])
+@require_admin
+def create_approval_chain():
+    """Create a new approval chain - admin only"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Validate required fields
+        required_fields = ['form_type', 'name', 'steps']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Create new approval chain
+        new_chain = {
+            'id': max([chain['id'] for chain in APPROVAL_CHAINS], default=0) + 1,
+            'form_type': data['form_type'],
+            'name': data['name'],
+            'steps': data['steps']
+        }
+        
+        APPROVAL_CHAINS.append(new_chain)
+        
+        return jsonify({
+            'message': 'Approval chain created successfully',
+            'chain': new_chain
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/form-types', methods=['GET'])
+@require_admin
+def get_form_types():
+    """Get available form types"""
+    try:
+        form_types = [
+            {'value': 'SMS', 'label': 'בקשת SMS'},
+            {'value': 'Software', 'label': 'בקשת תוכנה'},
+            {'value': 'Hardware', 'label': 'בקשת חומרה'},
+            {'value': 'Access', 'label': 'בקשת גישה'},
+            {'value': 'Maintenance', 'label': 'בקשת תחזוקה'}
+        ]
+        
+        return jsonify({'form_types': form_types}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+

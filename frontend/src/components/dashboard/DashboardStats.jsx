@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const DashboardStats = () => {
+const DashboardStats = ({ onStatClick }) => {
   const [stats, setStats] = useState({
     total_forms: 0,
     pending_forms: 0,
@@ -73,19 +73,19 @@ const DashboardStats = () => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-animation">
       {isAdmin ? (
         <>
-          <div className="icl-stats-card icl-card-enhanced bounce-icon">
+          <div className="icl-stats-card icl-card-enhanced bounce-icon cursor-pointer" onClick={() => onStatClick("all")}>
             <div className="text-3xl mb-3">📊</div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">סך הכל טפסים</h3>
             <p className="text-3xl font-bold gradient-text">{stats.total_forms || 0}</p>
           </div>
           
-          <div className="icl-stats-card icl-card-enhanced bounce-icon">
+          <div className="icl-stats-card icl-card-enhanced bounce-icon cursor-pointer" onClick={() => onStatClick("pending")}>
             <div className="text-3xl mb-3">⏳</div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">ממתינים לאישור</h3>
             <p className="text-3xl font-bold text-yellow-600">{stats.pending_forms || 0}</p>
           </div>
           
-          <div className="icl-stats-card icl-card-enhanced bounce-icon">
+          <div className="icl-stats-card icl-card-enhanced bounce-icon cursor-pointer" onClick={() => onStatClick("completed")}>
             <div className="text-3xl mb-3">✅</div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">טפסים שהושלמו</h3>
             <p className="text-3xl font-bold text-green-600">{stats.completed_forms || 0}</p>
@@ -93,19 +93,19 @@ const DashboardStats = () => {
         </>
       ) : (
         <>
-          <div className="icl-stats-card icl-card-enhanced bounce-icon">
+          <div className="icl-stats-card icl-card-enhanced bounce-icon cursor-pointer" onClick={() => onStatClick("my_forms")}>
             <div className="text-3xl mb-3">📋</div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">הטפסים שלי</h3>
             <p className="text-3xl font-bold gradient-text">{stats.my_forms || 0}</p>
           </div>
           
-          <div className="icl-stats-card icl-card-enhanced bounce-icon">
+          <div className="icl-stats-card icl-card-enhanced bounce-icon cursor-pointer" onClick={() => onStatClick("pending_for_me")}>
             <div className="text-3xl mb-3">⏳</div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">ממתינים לאישור שלי</h3>
             <p className="text-3xl font-bold text-yellow-600">{stats.pending_for_me || 0}</p>
           </div>
           
-          <div className="icl-stats-card icl-card-enhanced bounce-icon">
+          <div className="icl-stats-card icl-card-enhanced bounce-icon cursor-pointer" onClick={() => onStatClick("completed")}>
             <div className="text-3xl mb-3">✅</div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">טפסים שאושרו</h3>
             <p className="text-3xl font-bold text-green-600">{stats.completed_forms || 0}</p>

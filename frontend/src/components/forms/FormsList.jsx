@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
-const FormsList = ({ onFormSelect }) => {
+const FormsList = ({ onFormSelect, initialFilter = 'all' }) => {
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all'); // 'all', 'my_forms', 'pending_for_me'
+  const [filter, setFilter] = useState(initialFilter); // 'all', 'my_forms', 'pending_for_me'
+
+  useEffect(() => {
+    setFilter(initialFilter);
+  }, [initialFilter]);
 
   useEffect(() => {
     fetchForms();
-  }, [filter]);
+  }, [filter, initialFilter]);
 
   const fetchForms = async () => {
     try {
@@ -20,6 +24,10 @@ const FormsList = ({ onFormSelect }) => {
         params.append('my_forms_only', 'true');
       } else if (filter === 'pending_for_me') {
         params.append('pending_for_me', 'true');
+      } else if (filter === 'pending') {
+        params.append('status', 'pending');
+      } else if (filter === 'completed') {
+        params.append('status', 'completed');
       }
       
       if (params.toString()) {
@@ -102,34 +110,54 @@ const FormsList = ({ onFormSelect }) => {
           {/* Filter Buttons */}
           <div className="flex space-x-4 mb-6">
             <button
-              onClick={() => setFilter('all')}
+              onClick={() => setFilter("all")}
               className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                filter === 'all'
-                  ? 'icl-primary-button'
-                  : 'icl-secondary-button'
+                filter === "all"
+                  ? "icl-primary-button"
+                  : "icl-secondary-button"
               }`}
             >
               כל הטפסים
             </button>
             <button
-              onClick={() => setFilter('my_forms')}
+              onClick={() => setFilter("my_forms")}
               className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                filter === 'my_forms'
-                  ? 'icl-primary-button'
-                  : 'icl-secondary-button'
+                filter === "my_forms"
+                  ? "icl-primary-button"
+                  : "icl-secondary-button"
               }`}
             >
               הטפסים שלי
             </button>
             <button
-              onClick={() => setFilter('pending_for_me')}
+              onClick={() => setFilter("pending_for_me")}
               className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                filter === 'pending_for_me'
-                  ? 'icl-primary-button'
-                  : 'icl-secondary-button'
+                filter === "pending_for_me"
+                  ? "icl-primary-button"
+                  : "icl-secondary-button"
               }`}
             >
               ממתינים לאישור שלי
+            </button>
+            <button
+              onClick={() => setFilter("pending")}
+              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                filter === "pending"
+                  ? "icl-primary-button"
+                  : "icl-secondary-button"
+              }`}
+            >
+              ממתינים לאישור
+            </button>
+            <button
+              onClick={() => setFilter("completed")}
+              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                filter === "completed"
+                  ? "icl-primary-button"
+                  : "icl-secondary-button"
+              }`}
+            >
+              טפסים שהושלמו
             </button>
           </div>
         </div>

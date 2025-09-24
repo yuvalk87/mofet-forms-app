@@ -7,13 +7,15 @@ const CreateForm = React.lazy(() => import('./components/forms/CreateForm'));
 const FormsList = React.lazy(() => import('./components/forms/FormsList'));
 const UserManagement = React.lazy(() => import('./components/users/UserManagement'));
 const DashboardStats = React.lazy(() => import('./components/dashboard/DashboardStats'));
+const SystemSettings = React.lazy(() => import('./components/settings/SystemSettings'));
 
 // Simple App component
 const App = () => {
-  const [currentPage, setCurrentPage] = React.useState('dashboard');
+  const [currentPage, setCurrentPage] = React.useState("dashboard");
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [showCreateForm, setShowCreateForm] = React.useState(false);
   const [selectedForm, setSelectedForm] = React.useState(null);
+  const [formsFilter, setFormsFilter] = React.useState("all");
 
   React.useEffect(() => {
     // Check if user is logged in
@@ -85,6 +87,13 @@ const App = () => {
   const handleFormSelect = (form) => {
     setSelectedForm(form);
     // Could navigate to form details page
+  };
+
+  const handleStatClick = (filter) => {
+    setFormsFilter(filter);
+    setCurrentPage("forms");
+    setShowCreateForm(false);
+    setSelectedForm(null);
   };
 
   if (!isLoggedIn) {
@@ -182,7 +191,8 @@ const App = () => {
                   : 'hover:bg-icl-dark-blue text-white hover:shadow-md hover:transform hover:scale-102'
               }`}
               onClick={() => {
-                setCurrentPage('forms');
+                setFormsFilter("all");
+                setCurrentPage("forms");
                 setShowCreateForm(false);
                 setSelectedForm(null);
               }}
@@ -248,7 +258,7 @@ const App = () => {
               <p className="text-gray-600 text-lg">מערכת ניהול טפסים מתקדמת של ICL Group</p>
             </div>
             
-            <DashboardStats />
+            <DashboardStats onStatClick={handleStatClick} />
             
             <div className="icl-card icl-card-enhanced animate-fade-in-up animate-delay-400">
               <h3 className="text-xl font-semibold gradient-text mb-6">פעולות מהירות</h3>
@@ -288,7 +298,7 @@ const App = () => {
               </div>
             </div>
           }>
-            <FormsList onFormSelect={handleFormSelect} />
+            <FormsList onFormSelect={handleFormSelect} initialFilter={formsFilter} />
           </React.Suspense>
         )}
 
@@ -306,20 +316,16 @@ const App = () => {
         )}
 
         {currentPage === 'settings' && (
-          <div className="tech-background">
-            <div className="p-8 space-y-8 relative z-10">
-              <div className="icl-card animate-fade-in-up">
-                <h1 className="text-3xl font-bold gradient-text mb-2">הגדרות מערכת</h1>
-                <p className="text-gray-600">תצורה והגדרות כלליות של המערכת</p>
-              </div>
-              
-              <div className="icl-card text-center py-16 animate-fade-in-up animate-delay-200">
-                <div className="text-6xl mb-4">⚙️</div>
-                <div className="text-gray-500 text-xl mb-6">מודול הגדרות המערכת בפיתוח</div>
-                <p className="text-gray-400">תכונה זו תהיה זמינה בקרוב</p>
+          <React.Suspense fallback={
+            <div className="p-8 flex items-center justify-center">
+              <div className="text-center">
+                <div className="loading-spinner mx-auto mb-4"></div>
+                <p className="text-gray-600">טוען הגדרות מערכת...</p>
               </div>
             </div>
-          </div>
+          }>
+            <SystemSettings />
+          </React.Suspense>
         )}
 
         {currentPage === 'create-form' && showCreateForm && (

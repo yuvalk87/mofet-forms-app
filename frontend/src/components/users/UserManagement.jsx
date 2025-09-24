@@ -39,7 +39,7 @@ const UserManagement = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await fetch('/api/admin/roles', {
+      const response = await fetch('/api/users/roles', {
         credentials: 'include'
       });
       
@@ -114,9 +114,10 @@ const UserManagement = () => {
 
   const getRoleBadge = (role) => {
     const roleMap = {
-      'admin': { text: 'מנהל', class: 'bg-red-100 text-red-800' },
-      'manager': { text: 'מנהל צוות', class: 'bg-blue-100 text-blue-800' },
-      'user': { text: 'משתמש', class: 'bg-green-100 text-green-800' }
+      'admin': { text: 'מנהל מערכת', class: 'bg-red-100 text-red-800' },
+      'manager': { text: 'מנהל', class: 'bg-blue-100 text-blue-800' },
+      'supervisor': { text: 'מפקח', class: 'bg-purple-100 text-purple-800' },
+      'user': { text: 'משתמש רגיל', class: 'bg-green-100 text-green-800' }
     };
     
     const roleInfo = roleMap[role] || { text: role, class: 'bg-gray-100 text-gray-800' };
@@ -215,9 +216,11 @@ const UserManagement = () => {
                     onChange={(e) => setNewUser({...newUser, role: e.target.value})}
                     className="icl-input"
                   >
-                    <option value="user">משתמש</option>
-                    <option value="manager">מנהל צוות</option>
-                    <option value="admin">מנהל</option>
+                    {roles.map(role => (
+                      <option key={role.value} value={role.value}>
+                        {role.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-input-group">

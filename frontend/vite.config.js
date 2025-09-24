@@ -16,7 +16,7 @@ export default defineConfig({
     strictPort: false,
     proxy: {
       "/api": {
-        target: "https://5000-ilobg2od14yakb95u0dob-26f1bf08.manusvm.computer",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },

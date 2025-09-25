@@ -7,10 +7,16 @@ const SystemSettings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddList, setShowAddList] = useState(false);
+  const [showAddChain, setShowAddChain] = useState(false);
   const [newList, setNewList] = useState({
     name: '',
     description: '',
     items: []
+  });
+  const [newChain, setNewChain] = useState({
+    form_type: '',
+    name: '',
+    steps: []
   });
   const [newItem, setNewItem] = useState('');
 
@@ -44,7 +50,10 @@ const SystemSettings = () => {
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Approval chains data:', data);
         setApprovalChains(data.chains || []);
+      } else {
+        console.error('Failed to fetch approval chains:', response.status);
       }
     } catch (err) {
       console.error('Error fetching approval chains:', err);
@@ -106,11 +115,57 @@ const SystemSettings = () => {
         if (response.ok) {
           fetchDynamicLists();
         } else {
-          setError('שגיאה במחיקת הרשימה');
+          const data = await response.json();
+          setError(data.error || 'שגיאה במחיקת הרשימה');
         }
       } catch (err) {
         setError('שגיאה בחיבור לשרת');
       }
+    }
+  };
+
+  const handleDeleteChain = async (chainId) => {
+    if (window.confirm('האם אתה בטוח שברצונך למחוק שרשרת אישור זו?')) {
+      try {
+        const response = await fetch(`/api/admin/approval-chains/${chainId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          fetchApprovalChains();
+        } else {
+          const data = await response.json();
+          setError(data.error || 'שגיאה במחיקת שרשרת האישור');
+        }
+      } catch (err) {
+        setError('שגיאה בחיבור לשרת');
+      }
+    }
+  };
+
+  const handleAddChain = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/admin/approval-chains', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(newChain)
+      });
+
+      if (response.ok) {
+        setShowAddChain(false);
+        setNewChain({ form_type: '', name: '', steps: [] });
+        fetchApprovalChains();
+      } else {
+        const data = await response.json();
+        setError(data.error || 'שגיאה ביצירת שרשרת האישור');
+      }
+    } catch (err) {
+      setError('שגיאה בחיבור לשרת');
     }
   };
 
@@ -352,15 +407,69 @@ const SystemSettings = () => {
         {/* Approval Chains Tab */}
         {activeTab === 'approval_chains' && (
           <div className="icl-card">
-            <h2 className="text-xl font-semibold gradient-text mb-4">שרשראות אישור</h2>
-            <p className="text-gray-600 mb-6">
-              הגדרת תהליכי אישור עבור סוגי טפסים שונים. כל טופס יכול להיות בעל שרשרת אישור ייחודית.
-            </p>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-semibold gradient-text">שרשראות אישור</h2>
+                <p className="text-gray-600 mt-2">
+                  הגדרת תהליכי אישור עבור סוגי טפסים שונים. כל טופס יכול להיות בעל שרשרת אישור ייחודית.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAddChain(true)}
+                className="icl-primary-button interactive-element"
+              >
+                ➕ הוסף שרשרת אישור
+              </button>
+            </div>
             
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">🔄</div>
-              <div className="text-gray-500 text-xl mb-6">מודול שרשראות אישור בפיתוח</div>
-              <p className="text-gray-400">תכונה זו תהיה זמינה בקרוב עם עורך תרשים זרימה אינטראקטיבי</p>
+            {/* Approval Chains Display */}
+            <div className="space-y-4">
+              {approvalChains.map((chain, index) => (
+                <div
+                  key={chain.id}
+                  className="border rounded-lg p-4 bg-gray-50 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-semibold text-gray-800">{chain.name}</h3>
+                      <p className="text-sm text-gray-600">סוג טופס: {chain.form_type}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteChain(chain.id)}
+                      className="text-red-500 hover:text-red-700 text-sm"
+                    >
+                      מחק
+                    </button>
+                  </div>
+                  
+                  {/* Approval Steps */}
+                  <div className="flex items-center space-x-4 overflow-x-auto pb-2">
+                    {chain.steps.map((step, stepIndex) => (
+                      <div key={stepIndex} className="flex items-center">
+                        <div className="flex-shrink-0 bg-icl-cyan text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold">
+                          {step.step}
+                        </div>
+                        <div className="mx-2 text-center min-w-[100px]">
+                          <div className="text-sm font-medium text-gray-800">{step.name}</div>
+                          <div className="text-xs text-gray-500">{step.role}</div>
+                        </div>
+                        {stepIndex < chain.steps.length - 1 && (
+                          <div className="text-gray-400 text-xl">→</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              
+              {approvalChains.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">🔄</div>
+                  <div className="text-gray-500 text-xl mb-6">אין שרשראות אישור במערכת</div>
+                  <p className="text-gray-400">צור שרשרת אישור ראשונה כדי להתחיל</p>
+                </div>
+              )}
             </div>
           </div>
         )}
